@@ -1,5 +1,6 @@
-<link rel="stylesheet" href="/luci-static/vssr/css/vssr.css?v=202000427-1">
-<script src="<%=media%>/js/jquery.min.js"></script>
+<% math.randomseed(os.time()) %>
+<link rel="stylesheet" href="/luci-static/vssr/css/vssr.css?v=<%=math.random(1,100000)%>">
+<script src="/luci-static/vssr/jquery.min.js"></script>
 
 <div class="pure-g status">
     <div class="pure-u-1-4">
@@ -59,8 +60,9 @@
     const GAME_MODE = '<%:Game Mode%>';
     const RUNNING = '<%:Running%>';
     const NOT_RUNNING = '<%:Not Running%>';
+    const CHECK_IP_URL = '<%=url([[admin]], [[services]], [[vssr]], [[ip]])%>';
 
-    XHR.poll(5, STATUS1_URL, null,
+    XHR.poll(2, STATUS1_URL, null,
         function (x, data) {
             if (data) {
                 if (data.global) {

@@ -1,46 +1,54 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-vssr
-PKG_VERSION:=1.11
-PKG_RELEASE:=20200719
-
-PKG_CONFIG_DEPENDS:= CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_V2ray \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Server \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Socks
+PKG_VERSION:=1.22
+PKG_RELEASE:=20210227
 
 include $(INCLUDE_DIR)/package.mk
 
 define Package/$(PKG_NAME)/config
-	
-config PACKAGE_$(PKG_NAME)_INCLUDE_V2ray
-	bool "Include V2ray"
-	default y
+config PACKAGE_$(PKG_NAME)_INCLUDE_Xray
+	bool "Include Xray"
+	default y if i386||x86_64||arm||aarch64
 
 config PACKAGE_$(PKG_NAME)_INCLUDE_Trojan
 	bool "Include Trojan"
-	default y
+	default y if i386||x86_64||arm||aarch64
+	
+config PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun
+	bool "Include Kcptun"
+	default n
+
+config PACKAGE_$(PKG_NAME)_INCLUDE_Xray_plugin
+	bool "Include Shadowsocks Xray Plugin"
+	default y if i386||x86_64||arm||aarch64
 
 config PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Server
 	bool "Include ShadowsocksR Server"
-	default n
-	
-config PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Socks
-	bool "Include ShadowsocksR Socks and Tunnel"
-	default y
+	default y if i386||x86_64||arm||aarch64
 endef
+
+PKG_CONFIG_DEPENDS:= \
+	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Xray \
+	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Trojan \
+	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun \
+	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Xray_plugin \
+	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Server
 
 define Package/luci-app-vssr
  	SECTION:=luci
 	CATEGORY:=LuCI
 	SUBMENU:=3. Applications
-	TITLE:=A New SS/SSR/V2Ray/Trojan LuCI interface
+	TITLE:=A New SS/SSR/Xray/Trojan LuCI interface
 	PKGARCH:=all
-	DEPENDS:=+shadowsocksr-libev-alt +ipset +ip-full +iptables-mod-tproxy +dnsmasq-full +coreutils +coreutils-base64 +bash +pdnsd-alt +wget +luasocket +jshn +lua-cjson +coreutils-nohup +lua-maxminddb \
-            +PACKAGE_$(PKG_NAME)_INCLUDE_V2ray:v2ray \
+	DEPENDS:=+shadowsocksr-libev-alt +ipset +ip-full +iptables-mod-tproxy +dnsmasq-full +coreutils +coreutils-base64 +bash +pdnsd-alt +wget-ssl +lua +luasocket +lua-maxminddb \
+			+shadowsocks-libev-ss-local +shadowsocksr-libev-ssr-local +shadowsocks-libev-ss-redir +simple-obfs \
+			+PACKAGE_$(PKG_NAME)_INCLUDE_Xray:xray-core \
 			+PACKAGE_$(PKG_NAME)_INCLUDE_Trojan:trojan \
 			+PACKAGE_$(PKG_NAME)_INCLUDE_Trojan:ipt2socks \
-            +PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Server:shadowsocksr-libev-server \
-            +PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Socks:shadowsocksr-libev-ssr-local
+			+PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun:kcptun-client \
+			+PACKAGE_$(PKG_NAME)_INCLUDE_Xray_plugin:xray-plugin \
+			+PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Server:shadowsocksr-libev-server
 endef
 
 define Build/Prepare
@@ -50,12 +58,8 @@ define Build/Compile
 endef
 
 define Package/luci-app-vssr/conffiles
-	/etc/ssr_ip
-	/etc/dnsmasq.ssr/gfw_list.conf
-	/etc/china_ssr.txt
-	/etc/dnsmasq.ssr/gfw_list.conf
-	/etc/dnsmasq.ssr/gfw_base.conf
-	/etc/dnsmasq.oversea/oversea_list.conf
+	/etc/vssr/
+	/etc/config/vssr
 endef
 
 define Package/luci-app-vssr/install
